@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DRAFT_STORAGE_KEY, savePlaygroundReturn } from '../constants/playground';
+import { BugImageAttachments } from '../components/bugs/BugImageAttachments';
+import { RecordingPreview } from '../components/replay/RecordingPreview';
 import { Button } from '../components/ui/Button';
+import { MAX_BUG_IMAGES } from '../constants/attachments';
+import { fileToBugAttachment } from '../utils/imageAttachments';
+import { useReplayContext } from '../context/ReplayContext';
+import { launchRecordingPreviewReplay } from '../utils/recordingPreviewReplay';
+import { PageHeader } from '../components/layout/PageHeader';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import { Input, Select, Textarea } from '../components/ui/Input';
 import { DEFAULT_BUG, SEVERITIES, STATUSES, BUG_TYPES } from '../constants/bugOptions';
+import { DEMO_USER_NAME } from '../constants/user';
 import { useBugsContext } from '../context/BugsContext';
 import { useRecordingContext } from '../context/RecordingContext';
 
@@ -22,10 +30,37 @@ export function CreateBugPage() {
   const location = useLocation();
   const { addBug } = useBugsContext();
   const { isRecording, finalizedSteps, attachFinalizedToSteps, resetRecording } = useRecordingContext();
+  const { queueReplay } = useReplayContext();
   const [form, setForm] = useState(loadDraft);
   const [error, setError] = useState('');
 
   const update = (field, value) => setForm((f) => ({ ...f, [field]: value }));
+
+  const handleAddImage = async (file) => {
+    const attachment = await fileToBugAttachment(file);
+    setForm((f) => {
+      const existing = f.attachments || [];
+      if (existing.length >= MAX_BUG_IMAGES) return f;
+      return { ...f, attachments: [...existing, attachment] };
+    });
+  };
+
+  const handleReplaceImage = async (imageId, file) => {
+    const attachment = await fileToBugAttachment(file);
+    setForm((f) => ({
+      ...f,
+      attachments: (f.attachments || []).map((img) =>
+        img.id === imageId ? { ...attachment, id: imageId } : img,
+      ),
+    }));
+  };
+
+  const handleDeleteImage = (imageId) => {
+    setForm((f) => ({
+      ...f,
+      attachments: (f.attachments || []).filter((img) => img.id !== imageId),
+    }));
+  };
 
   useEffect(() => {
     sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(form));
@@ -33,7 +68,19 @@ export function CreateBugPage() {
 
   const openPlayground = () => {
     savePlaygroundReturn(location.pathname);
-    navigate('/playground/login', { state: { returnTo: location.pathname } });
+    navigate('/playground/products', { state: { returnTo: location.pathname } });
+  };
+
+  const backPath = location.state?.returnTo || '/';
+
+  const previewRecordingInPlayground = () => {
+    if (!finalizedSteps.length || isRecording) return;
+    launchRecordingPreviewReplay({
+      steps: finalizedSteps,
+      returnPath: location.pathname,
+      navigate,
+      queueReplay,
+    });
   };
 
   const handleSubmit = (e) => {
@@ -53,6 +100,7 @@ export function CreateBugPage() {
       title: form.title.trim(),
       description: form.description.trim(),
       replaySteps: replaySteps.length ? replaySteps : [],
+      createdBy: DEMO_USER_NAME,
     });
     resetRecording();
     sessionStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -60,33 +108,58 @@ export function CreateBugPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-stripe-ink" data-testid="create-bug-title">
-          Create Bug
-        </h1>
-        <p className="mt-2 text-sm text-stripe-muted">
-          Bug Type defaults to UI. Record repro steps in the Test Playground, then save.
-        </p>
-      </div>
+    <div className="page-section">
+      <PageHeader
+        title="Create Bug"
+        subtitle="Bug Type defaults to UI. Record repro steps in the Test Playground, then save."
+        data-testid="create-bug-title"
+        action={
+          <Button
+            type="button"
+            variant="secondary"
+            data-testid="create-bug-back"
+            onClick={() => navigate(backPath)}
+          >
+            ← Back
+          </Button>
+        }
+      />
 
       <Card data-testid="test-playground-section">
         <CardHeader
           title="Test Playground"
           subtitle="ShopDemo — mock retail app used as the system under test (SUT)."
         />
-        <CardBody className="space-y-3">
-          <p className="text-sm text-stripe-muted">
-            Recording is always available in the playground. Interact inside ShopDemo only — not this
-            bug tracker UI.
+        <CardBody className="space-y-4">
+          <p className="text-sm leading-relaxed text-stripe-muted">
+            Recording is always available in the playground. Interact inside ShopDemo only — not
+            this bug tracker UI.
           </p>
           <Button data-testid="open-test-playground" onClick={openPlayground}>
             Open Test Playground to Record
           </Button>
           {finalizedSteps.length > 0 && (
-            <p className="text-sm text-emerald-700" data-testid="attach-recording-hint">
-              {finalizedSteps.length} replay step(s) ready to attach on save.
-            </p>
+            <div
+              className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-4"
+              data-testid="attach-recording-preview"
+            >
+              <p className="mb-3 text-sm font-medium text-emerald-800">
+                Recording ready — will attach when you save this bug
+              </p>
+              <RecordingPreview steps={finalizedSteps} defaultExpanded />
+              <Button
+                type="button"
+                data-testid="preview-recording-playground"
+                onClick={previewRecordingInPlayground}
+                disabled={isRecording}
+                className="mt-4 w-full sm:w-auto"
+              >
+                Preview recorded steps in Test Playground
+              </Button>
+              <p className="mt-2 text-xs text-emerald-700/90">
+                Live simulation in ShopDemo — same replay you will get after saving this bug.
+              </p>
+            </div>
           )}
         </CardBody>
       </Card>
@@ -100,7 +173,7 @@ export function CreateBugPage() {
               data-testid="bug-title"
               value={form.title}
               onChange={(e) => update('title', e.target.value)}
-              placeholder="e.g. Login form fails on submit"
+              placeholder="e.g. Checkout button fails on submit"
               required
             />
             <Textarea
@@ -149,7 +222,7 @@ export function CreateBugPage() {
                 type="button"
                 variant="secondary"
                 data-testid="bug-cancel"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(backPath)}
               >
                 Cancel
               </Button>
@@ -157,6 +230,13 @@ export function CreateBugPage() {
           </form>
         </CardBody>
       </Card>
+
+      <BugImageAttachments
+        attachments={form.attachments}
+        onAdd={handleAddImage}
+        onReplace={handleReplaceImage}
+        onDelete={handleDeleteImage}
+      />
     </div>
   );
 }

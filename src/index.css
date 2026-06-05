@@ -1,58 +1,157 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  body {
-    @apply font-sans antialiased;
-  }
-}
-
-/* Stripe — main bug tracker */
-.app-stripe {
-  @apply min-h-screen bg-stripe-bg text-stripe-ink;
-}
-
-@layer components {
-  .stripe-card {
-    @apply rounded-lg border border-stripe-border bg-stripe-surface shadow-stripe;
-  }
-
-  .stripe-card-header {
-    @apply border-b border-stripe-border px-6 py-4;
-  }
-
-  .stripe-input {
-    @apply w-full rounded-md border border-stripe-border bg-stripe-surface px-3 py-2 text-sm text-stripe-ink shadow-sm placeholder:text-stripe-faint focus:border-stripe-accent focus:outline-none focus:ring-2 focus:ring-stripe-accent/20;
-  }
-
-  /* Modern — Test Playground */
-  .playground-shell {
-    @apply min-h-screen bg-gradient-to-b from-pg-bg via-white to-pg-accent-soft/30 text-pg-ink;
-  }
-
-  .pg-card {
-    @apply rounded-2xl border border-pg-line/80 bg-pg-surface shadow-pg;
-  }
-
-  .pg-input {
-    @apply w-full rounded-xl border border-pg-line bg-pg-surface px-4 py-2.5 text-sm text-pg-ink shadow-sm placeholder:text-pg-faint focus:border-pg-accent focus:outline-none focus:ring-2 focus:ring-pg-accent/25;
-  }
-
-  .pg-nav-link {
-    @apply rounded-xl px-4 py-2 text-sm font-medium text-pg-muted transition-colors hover:bg-pg-accent-soft hover:text-pg-accent;
-  }
-
-  .pg-nav-link-active {
-    @apply rounded-xl bg-pg-accent px-4 py-2 text-sm font-medium text-white shadow-md shadow-pg-accent/25;
-  }
-}
-
-@layer utilities {
-  #test-playground-root .replay-highlight {
-    outline: 3px solid #4f46e5 !important;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.2) !important;
-    background-color: rgba(79, 70, 229, 0.05) !important;
-  }
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+/* Stripe — main bug tracker */
+.app-stripe {
+  @apply min-h-screen bg-stripe-bg text-stripe-ink;
+}
+
+@layer components {
+  .stripe-card {
+    @apply rounded-lg border border-stripe-border bg-stripe-surface shadow-stripe;
+  }
+
+  .stripe-card-header {
+    @apply border-b border-stripe-border px-6 py-4;
+  }
+
+  .stripe-input {
+    @apply w-full rounded-md border border-stripe-border bg-stripe-surface px-3 py-2 text-sm text-stripe-ink shadow-sm placeholder:text-stripe-faint focus:border-stripe-accent focus:outline-none focus:ring-2 focus:ring-stripe-accent/20;
+  }
+
+  /* Modern — Test Playground */
+  .playground-shell {
+    @apply min-h-screen bg-gradient-to-b from-pg-bg via-white to-pg-accent-soft/30 text-pg-ink;
+  }
+
+  .pg-card {
+    @apply rounded-2xl border border-pg-line/80 bg-pg-surface shadow-pg;
+  }
+
+  .pg-input {
+    @apply w-full rounded-xl border border-pg-line bg-pg-surface px-4 py-2.5 text-sm text-pg-ink shadow-sm placeholder:text-pg-faint focus:border-pg-accent focus:outline-none focus:ring-2 focus:ring-pg-accent/25;
+  }
+
+  .pg-nav-link {
+    @apply rounded-xl px-4 py-2 text-sm font-medium text-pg-muted transition-colors hover:bg-pg-accent-soft hover:text-pg-accent;
+  }
+
+  .pg-nav-link-active {
+    @apply rounded-xl bg-pg-accent px-4 py-2 text-sm font-medium text-white shadow-md shadow-pg-accent/25;
+  }
+
+  .page-section {
+    @apply space-y-8;
+  }
+
+  .text-lead {
+    @apply text-base leading-relaxed text-stripe-muted;
+  }
+
+  .text-body {
+    @apply text-sm leading-relaxed text-stripe-ink;
+  }
+
+  .text-body-muted {
+    @apply text-sm leading-relaxed text-stripe-muted;
+  }
+
+  .meta-list {
+    @apply grid gap-x-4 gap-y-3 text-sm sm:grid-cols-[minmax(7rem,auto)_1fr];
+  }
+
+  .meta-list dt {
+    @apply font-medium text-stripe-muted;
+  }
+
+  .meta-list dd {
+    @apply text-stripe-ink;
+  }
+}
+
+@layer utilities {
+  #playground .replay-highlight {
+    outline: 3px solid #4f46e5 !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.2) !important;
+    background-color: rgba(79, 70, 229, 0.05) !important;
+  }
+
+  #playground .replay-highlight-click {
+    outline: 3px solid #ca8a04 !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 8px rgba(234, 179, 8, 0.45) !important;
+    background-color: rgba(254, 240, 138, 0.55) !important;
+    transition: outline 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  #playground .replay-click-cursor {
+    position: absolute;
+    z-index: 40;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
+
+  #playground .replay-click-cursor__pointer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    transform: translate(-35%, -20%);
+    border-radius: 50% 50% 50% 0;
+    background: linear-gradient(135deg, #fef08a 0%, #eab308 55%, #ca8a04 100%);
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transform-origin: top left;
+    animation: replay-cursor-press 0.45s ease-out forwards;
+  }
+
+  #playground .replay-click-cursor__ripple {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 3px solid #eab308;
+    opacity: 0;
+    animation: replay-click-ripple 0.55s ease-out forwards;
+  }
+
+  #playground .replay-click-cursor--active .replay-click-cursor__ripple {
+    animation: replay-click-ripple 0.55s ease-out forwards;
+  }
+}
+
+@keyframes replay-click-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.35);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.2);
+    opacity: 0;
+  }
+}
+
+@keyframes replay-cursor-press {
+  0% {
+    transform: translate(-35%, -20%) scale(1);
+  }
+  35% {
+    transform: translate(-35%, -10%) scale(0.88);
+  }
+  100% {
+    transform: translate(-35%, -20%) scale(1);
+  }
+}

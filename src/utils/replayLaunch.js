@@ -5,5 +5,5 @@ export function getReplayStartPath(steps) {
   if (firstNav?.path && isPlaygroundPath(firstNav.path)) {
     return firstNav.path;
   }
-  return '/playground/login';
+  return '/playground/products';
 }

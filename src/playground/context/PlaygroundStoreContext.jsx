@@ -3,17 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 const PlaygroundStoreContext = createContext(null);
 
 export function PlaygroundStoreProvider({ children }) {
-  const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
-
-  const login = useCallback((email) => {
-    setUser({ email, name: email.split('@')[0] || 'Guest' });
-  }, []);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    setCart([]);
-  }, []);
 
   const addToCart = useCallback((product, qty = 1) => {
     setCart((prev) => {
@@ -56,12 +46,9 @@ export function PlaygroundStoreProvider({ children }) {
   );
 
   const value = {
-    user,
     cart,
     cartTotal,
     cartCount,
-    login,
-    logout,
     addToCart,
     updateQuantity,
     removeFromCart,

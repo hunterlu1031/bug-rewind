@@ -9,4 +9,8 @@ export const DEFAULT_BUG = {
   status: 'Open',
   type: 'UI',
   replaySteps: [],
+  assignee: '',
+  comments: [],
+  closeResolution: '',
+  attachments: [],
 };

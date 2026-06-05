@@ -1,4 +1,7 @@
-const STORAGE_KEY = 'bug-rewind-bugs';
+/** Primary localStorage key for bug records (runtime analytics read via loadBugs). */
+export const QA_BUGS_STORAGE_KEY = 'bug-rewind-bugs';
+
+const STORAGE_KEY = QA_BUGS_STORAGE_KEY;
 
 export function loadBugs() {
   try {

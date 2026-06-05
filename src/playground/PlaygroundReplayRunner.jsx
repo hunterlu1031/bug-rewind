@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { clampReplayDelay, PLAYGROUND_ROOT_ID } from '../constants/playground';
 import { useReplayContext } from '../context/ReplayContext';
 import { runReplay } from '../utils/replayEngine';
-import { labelForStep } from '../utils/selectors';
+import { normalizeReplaySteps } from '../utils/replaySteps';
 
 function waitForPlaygroundRoot(maxMs = 6000) {
   return new Promise((resolve) => {
@@ -33,6 +33,10 @@ export function PlaygroundReplayRunner() {
     completeReplaySession,
     failReplaySession,
     updateReplayMeta,
+    updateStepResult,
+    setInspectorSelectedIndex,
+    replayPausedRef,
+    cancelReplayRef,
   } = useReplayContext();
 
   const pendingId = pendingReplay?.id;
@@ -41,7 +45,8 @@ export function PlaygroundReplayRunner() {
     if (!pendingId) return undefined;
 
     consumePendingReplay(async (payload) => {
-      const { bugId, steps, stepDelayMs, returnPath } = payload;
+      const { bugId, steps: rawSteps, stepDelayMs, returnPath } = payload;
+      const steps = normalizeReplaySteps(rawSteps);
       const delay = clampReplayDelay(stepDelayMs);
 
       await waitForPlaygroundRoot();
@@ -53,11 +58,12 @@ export function PlaygroundReplayRunner() {
         currentStep: 0,
         returnPath,
         stepDelayMs: delay,
+        steps,
       });
 
       const navigateTo = async (path) => {
         navigate(path);
-        await new Promise((r) => setTimeout(r, 350));
+        await new Promise((r) => setTimeout(r, 450));
         await waitForPlaygroundRoot();
       };
 
@@ -66,15 +72,27 @@ export function PlaygroundReplayRunner() {
       const result = await runReplay(steps, {
         stepDelayMs: delay,
         onNavigation: navigateTo,
+        shouldPause: () => replayPausedRef.current,
+        shouldCancel: () => cancelReplayRef.current,
         onProgress: ({ index, step }) => {
+          if (!replayPausedRef.current) {
+            setInspectorSelectedIndex(index);
+          }
           updateReplayMeta({
             currentStep: index,
             currentStepData: step,
             stepDelayMs: delay,
           });
         },
+        onStepComplete: ({ index, ok, error }) => {
+          updateStepResult(index, {
+            status: ok ? 'success' : 'failed',
+            error: error || undefined,
+          });
+        },
         onError: ({ index, step, message }) => {
           reportedError = true;
+          updateStepResult(index, { status: 'failed', error: message });
           failReplaySession({
             bugId,
             totalSteps: steps.length,
@@ -83,6 +101,7 @@ export function PlaygroundReplayRunner() {
             stepDelayMs: delay,
             currentStepData: step,
             errorMessage: message,
+            steps,
           });
         },
       });
@@ -94,6 +113,7 @@ export function PlaygroundReplayRunner() {
           currentStep: steps.length - 1,
           returnPath,
           stepDelayMs: delay,
+          steps,
         });
       } else if (result.cancelled && !reportedError) {
         failReplaySession({
@@ -101,6 +121,7 @@ export function PlaygroundReplayRunner() {
           returnPath,
           stepDelayMs: delay,
           errorMessage: 'Replay was cancelled.',
+          steps,
         });
       }
 
@@ -116,6 +137,10 @@ export function PlaygroundReplayRunner() {
     completeReplaySession,
     failReplaySession,
     updateReplayMeta,
+    updateStepResult,
+    setInspectorSelectedIndex,
+    replayPausedRef,
+    cancelReplayRef,
   ]);
 
   return null;

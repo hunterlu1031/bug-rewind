@@ -5,7 +5,7 @@ Frontend-only QA bug tracker with in-app interaction recording, DOM replay, and 
 ## Features
 
 - **Bug tracker** — title, description, severity, status, bug type; dashboard table with filters; localStorage persistence
-- **Test Playground** — ShopDemo mock retail SUT (login, catalog, product detail, cart, checkout); static frontend-only data
+- **Test Playground** — ShopDemo mock retail SUT (catalog, product detail, cart, checkout); static frontend-only data
 - **Recording** — UI bug type only; captures interactions inside the playground via `data-testid` (not the bug tracker chrome)
 - **Replay** — runs in the Test Playground with a top “Replay in progress” banner, then returns to the bug ticket
 - **Theme** — light mode default; toggle light/dark in the header

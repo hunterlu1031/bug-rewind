@@ -1,4 +1,7 @@
-export const PLAYGROUND_ROOT_ID = 'test-playground-root';
+/** DOM id for ShopDemo capture (#playground) and replay root. */
+export const PLAYGROUND_DOM_ID = 'playground';
+
+export const PLAYGROUND_ROOT_ID = PLAYGROUND_DOM_ID;
 export const PLAYGROUND_PATH_PREFIX = '/playground';
 export const PLAYGROUND_RETURN_KEY = 'playground-return-path';
 
@@ -9,9 +12,9 @@ export function isPlaygroundPath(pathname) {
 export const DRAFT_STORAGE_KEY = 'bug-rewind-create-draft';
 export const PENDING_REPLAY_KEY = 'bug-rewind-pending-replay';
 
-export const DEFAULT_REPLAY_DELAY_MS = 300;
+export const DEFAULT_REPLAY_DELAY_MS = 500;
 export const MIN_REPLAY_DELAY_MS = 50;
-export const MAX_REPLAY_DELAY_MS = 500;
+export const MAX_REPLAY_DELAY_MS = 900;
 
 export function clampReplayDelay(ms) {
   const n = Number(ms);
