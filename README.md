@@ -1,14 +1,17 @@
 # Bug Rewind
 
-Frontend-only QA bug tracker with in-app interaction recording, DOM replay, and rule-based “AI” analysis. Built for static hosting (e.g. AWS S3).
+**Proof-of-concept prototype only — not intended for production use.**
+
+Bug Rewind is an experimental frontend-only QA workflow demo: in-app interaction recording, DOM replay, and rule-based “AI” analysis. It showcases ideas for replay-driven bug reporting and is built for static hosting (e.g. AWS S3). Data lives in the browser (`localStorage`); there is no backend, authentication, or multi-user support.
+
+> This project may contain incomplete features, rough edges, and bugs. Use it to explore the concept — not as a production bug tracker or QA platform.
 
 ## Features
 
 - **Bug tracker** — title, description, severity, status, bug type; dashboard table with filters; localStorage persistence
 - **Test Playground** — ShopDemo mock retail SUT (catalog, product detail, cart, checkout); static frontend-only data
-- **Recording** — UI bug type only; captures interactions inside the playground via `data-testid` (not the bug tracker chrome)
-- **Replay** — runs in the Test Playground with a top “Replay in progress” banner, then returns to the bug ticket
-- **Theme** — light mode default; toggle light/dark in the header
+- **Recording** — captures interactions inside the playground via `data-testid` (not the bug tracker chrome)
+- **Replay** — runs in the Test Playground with step-by-step playback, then returns to the bug ticket
 - **Fake AI** — severity hints, root cause guesses, summary rewrite, duplicate detection (`src/ai/fakeAiEngine.js`)
 
 ## Tech stack
@@ -46,7 +49,7 @@ Enable static website hosting on the bucket and set `index.html` as the index do
 ## Workflow
 
 1. **Dashboard** — view, filter, and clear bugs; open Test Playground
-2. **Create Bug** — set **Bug Type** to **UI**, open Test Playground, record in ShopDemo, stop recording, save bug
+2. **Create Bug** — open Test Playground, record in ShopDemo, stop recording, save bug
 3. **Bug Details** — replay in playground (returns here when done), export JSON, review AI insights
 
 ## Project structure
@@ -59,15 +62,16 @@ src/
   context/      bugs + recording providers
   hooks/        useBugs, useRecording
   pages/        Dashboard, Create Bug, Bug Details
+  playground/   ShopDemo SUT pages
   services/     localStorage wrapper
   utils/        replay engine, selectors
 ```
 
 ## Recording & replay notes
 
-- Recording requires **Bug Type: UI** and only captures events inside `#test-playground-root`
+- Recording only captures events inside the playground root (`#playground`)
 - Only elements with `data-testid` are recorded (playground uses `pg-*` ids)
-- Replay scopes queries to the playground root and navigates back to `/bugs/:id` when finished
+- Replay scopes queries to the playground root and navigates back to the bug detail page when finished
 
 ## License
 
